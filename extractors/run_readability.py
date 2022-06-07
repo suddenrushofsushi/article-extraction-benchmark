@@ -3,7 +3,8 @@ import gzip
 import json
 from pathlib import Path
 
-from goose3 import Goose
+import html_text
+from readability import Document
 
 
 def main():
@@ -12,13 +13,10 @@ def main():
         with gzip.open(path, 'rt', encoding='utf8') as f:
             html = f.read()
         item_id = path.stem.split('.')[0]
-        g = Goose()
-        g.parse_headers = False
-        g.config.parser_class = "lxml"
-        g.config.parse_headers = True
-        article = g.extract(raw_html=html)
-        output[item_id] = {'articleBody': article.cleaned_text}
-    (Path('output') / 'goose3.json').write_text(
+        doc = Document(html)
+        text = html_text.extract_text(doc.summary(html_partial=True))
+        output[item_id] = {'articleBody': text}
+    (Path('output') / 'readability.json').write_text(
         json.dumps(output, sort_keys=True, ensure_ascii=False, indent=4),
         encoding='utf8')
 
